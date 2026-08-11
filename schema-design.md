@@ -109,6 +109,7 @@ admin
   +---- patients
   +---- doctors
   +---- appointments
+```
 {
   "_id": "PR-10001",
   "patientId": 101,
