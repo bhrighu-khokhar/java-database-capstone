@@ -1,119 +1,147 @@
 # Smart Clinic Management System - Database Schema Design
 
-## 1. MySQL Database Design
+## MySQL Database Design
 
-The Smart Clinic Management System uses MySQL for structured and relational data. The database contains information about patients, doctors, appointments, and administrators.
+The Smart Clinic Management System uses MySQL for structured and relational data such as patients, doctors, appointments, and administrators.
 
-### 1.1 Patients Table
+### Table: patients
 
-| Column | Data Type | Key | Constraints |
-|---|---|---|---|
-| patient_id | BIGINT | PRIMARY KEY | NOT NULL, AUTO_INCREMENT |
-| first_name | VARCHAR(50) | | NOT NULL |
-| last_name | VARCHAR(50) | | NOT NULL |
-| email | VARCHAR(100) | UNIQUE | NOT NULL |
-| phone | VARCHAR(20) | UNIQUE | NOT NULL |
-| date_of_birth | DATE | | NOT NULL |
-| gender | VARCHAR(20) | | |
-| address | VARCHAR(255) | | |
-| created_at | TIMESTAMP | | NOT NULL |
+- `id`: BIGINT, Primary Key, Auto Increment
+- `first_name`: VARCHAR(50), Not Null
+- `last_name`: VARCHAR(50), Not Null
+- `email`: VARCHAR(100), Not Null, Unique
+- `phone`: VARCHAR(20), Not Null, Unique
+- `date_of_birth`: DATE, Not Null
+- `gender`: VARCHAR(20)
+- `address`: VARCHAR(255)
+- `created_at`: TIMESTAMP, Not Null
 
-The `patient_id` uniquely identifies each patient. Email and phone numbers are unique to prevent duplicate patient accounts.
+The `id` uniquely identifies each patient. Email and phone are unique to prevent duplicate patient accounts.
 
 ---
 
-### 1.2 Doctors Table
+### Table: doctors
 
-| Column | Data Type | Key | Constraints |
-|---|---|---|---|
-| doctor_id | BIGINT | PRIMARY KEY | NOT NULL, AUTO_INCREMENT |
-| first_name | VARCHAR(50) | | NOT NULL |
-| last_name | VARCHAR(50) | | NOT NULL |
-| email | VARCHAR(100) | UNIQUE | NOT NULL |
-| phone | VARCHAR(20) | UNIQUE | NOT NULL |
-| specialization | VARCHAR(100) | | NOT NULL |
-| license_number | VARCHAR(50) | UNIQUE | NOT NULL |
-| availability | VARCHAR(255) | | |
+- `id`: BIGINT, Primary Key, Auto Increment
+- `first_name`: VARCHAR(50), Not Null
+- `last_name`: VARCHAR(50), Not Null
+- `email`: VARCHAR(100), Not Null, Unique
+- `phone`: VARCHAR(20), Not Null, Unique
+- `specialization`: VARCHAR(100), Not Null
+- `license_number`: VARCHAR(50), Not Null, Unique
+- `working_hours`: VARCHAR(255)
 
-The `doctor_id` uniquely identifies each doctor. The license number is unique because every doctor should have a unique professional license.
+The `license_number` is unique because each doctor must have a unique professional license.
 
 ---
 
-### 1.3 Appointments Table
+### Table: appointments
 
-| Column | Data Type | Key | Constraints |
-|---|---|---|---|
-| appointment_id | BIGINT | PRIMARY KEY | NOT NULL, AUTO_INCREMENT |
-| patient_id | BIGINT | FOREIGN KEY | NOT NULL |
-| doctor_id | BIGINT | FOREIGN KEY | NOT NULL |
-| appointment_date | DATE | | NOT NULL |
-| appointment_time | TIME | | NOT NULL |
-| status | VARCHAR(30) | | NOT NULL |
-| reason | VARCHAR(255) | | |
-| created_at | TIMESTAMP | | NOT NULL |
+- `id`: BIGINT, Primary Key, Auto Increment
+- `doctor_id`: BIGINT, Foreign Key → doctors(id), Not Null
+- `patient_id`: BIGINT, Foreign Key → patients(id), Not Null
+- `appointment_time`: DATETIME, Not Null
+- `status`: VARCHAR(20), Not Null
+- `reason`: VARCHAR(255)
+- `created_at`: TIMESTAMP, Not Null
 
-Foreign key relationships:
-
-- `patient_id` references `patients(patient_id)`
-- `doctor_id` references `doctors(doctor_id)`
-
-An appointment must belong to an existing patient and an existing doctor.
-
-The `status` field can contain values such as:
+Possible appointment statuses include:
 
 - `SCHEDULED`
 - `COMPLETED`
 - `CANCELLED`
 
----
+Each appointment belongs to exactly one patient and one doctor.
 
-### 1.4 Admin Table
+A patient can have many appointments, and a doctor can have many appointments.
 
-| Column | Data Type | Key | Constraints |
-|---|---|---|---|
-| admin_id | BIGINT | PRIMARY KEY | NOT NULL, AUTO_INCREMENT |
-| first_name | VARCHAR(50) | | NOT NULL |
-| last_name | VARCHAR(50) | | NOT NULL |
-| username | VARCHAR(50) | UNIQUE | NOT NULL |
-| email | VARCHAR(100) | UNIQUE | NOT NULL |
-| password | VARCHAR(255) | | NOT NULL |
-| role | VARCHAR(30) | | NOT NULL |
+The system should prevent overlapping appointments for the same doctor through application-level validation before creating a new appointment.
 
-The `admin_id` uniquely identifies an administrator. Username and email are unique so that multiple administrator accounts cannot use the same credentials.
+Past appointments should be retained so that the clinic can maintain appointment history and doctors can refer to previous consultations.
 
 ---
 
-## 2. Relationships Between MySQL Tables
+### Table: admin
 
-The main relationships are:
+- `id`: BIGINT, Primary Key, Auto Increment
+- `first_name`: VARCHAR(50), Not Null
+- `last_name`: VARCHAR(50), Not Null
+- `username`: VARCHAR(50), Not Null, Unique
+- `email`: VARCHAR(100), Not Null, Unique
+- `password`: VARCHAR(255), Not Null
+- `role`: VARCHAR(30), Not Null
+
+The `username` and `email` fields are unique to prevent duplicate administrator accounts.
+
+Passwords should be stored using secure hashing rather than plain text.
+
+---
+
+### MySQL Relationships
+
+The main relationships between the tables are:
 
 - One patient can have many appointments.
 - One doctor can have many appointments.
 - Each appointment belongs to one patient.
 - Each appointment belongs to one doctor.
-- Administrators manage the clinic system and its users.
+- Administrators manage patients, doctors, and appointments.
 
-The relationships can be represented as:
+The appointment table connects patients and doctors through foreign keys.
 
 ```text
-Patients
-   |
-   | 1
-   |
-   | N
-Appointments
-   |
-   | N
-   |
-   | 1
-Doctors
+patients
+    |
+    | 1
+    |
+    | N
+appointments
+    |
+    | N
+    |
+    | 1
+doctors
 
-Admin
-   |
-   | manages
-   |
-   +--------------------+
-                        |
-                     Patients
-                     Doctors
-                  Appointments
+admin
+  |
+  | manages
+  |
+  +---- patients
+  +---- doctors
+  +---- appointments
+{
+  "_id": "PR-10001",
+  "patientId": 101,
+  "doctorId": 205,
+  "appointmentId": 5001,
+  "prescriptionDate": "2026-08-11",
+  "medications": [
+    {
+      "name": "Medicine A",
+      "dosage": "500 mg",
+      "frequency": "Twice a day",
+      "duration": "5 days",
+      "instructions": "Take after meals"
+    },
+    {
+      "name": "Medicine B",
+      "dosage": "10 mg",
+      "frequency": "Once a day",
+      "duration": "10 days",
+      "instructions": "Take before bedtime"
+    }
+  ],
+  "diagnosis": {
+    "condition": "Example condition",
+    "severity": "Mild"
+  },
+  "doctorNotes": "Patient should maintain adequate rest and hydration.",
+  "tags": [
+    "follow-up",
+    "medication"
+  ],
+  "followUp": {
+    "required": true,
+    "date": "2026-08-21"
+  }
+}
