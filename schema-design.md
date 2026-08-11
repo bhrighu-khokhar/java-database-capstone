@@ -110,39 +110,3 @@ admin
   +---- doctors
   +---- appointments
 ```
-{
-  "_id": "PR-10001",
-  "patientId": 101,
-  "doctorId": 205,
-  "appointmentId": 5001,
-  "prescriptionDate": "2026-08-11",
-  "medications": [
-    {
-      "name": "Medicine A",
-      "dosage": "500 mg",
-      "frequency": "Twice a day",
-      "duration": "5 days",
-      "instructions": "Take after meals"
-    },
-    {
-      "name": "Medicine B",
-      "dosage": "10 mg",
-      "frequency": "Once a day",
-      "duration": "10 days",
-      "instructions": "Take before bedtime"
-    }
-  ],
-  "diagnosis": {
-    "condition": "Example condition",
-    "severity": "Mild"
-  },
-  "doctorNotes": "Patient should maintain adequate rest and hydration.",
-  "tags": [
-    "follow-up",
-    "medication"
-  ],
-  "followUp": {
-    "required": true,
-    "date": "2026-08-21"
-  }
-}
