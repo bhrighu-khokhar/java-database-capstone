@@ -110,3 +110,42 @@ admin
   +---- doctors
   +---- appointments
 ```
+## MongoDB Collection Design
+
+MongoDB will be used for flexible, document-based data. The `prescriptions` collection is suitable because prescriptions can contain different numbers of medications, notes, diagnosis information, and follow-up details.
+
+### Collection: prescriptions
+
+```json
+{
+  "_id": "PR-10001",
+  "patientId": 101,
+  "doctorId": 205,
+  "appointmentId": 5001,
+  "prescriptionDate": "2026-08-11",
+  "medications": [
+    {
+      "name": "Paracetamol",
+      "dosage": "500mg",
+      "frequency": "Twice a day",
+      "duration": "5 days",
+      "instructions": "Take after meals"
+    },
+    {
+      "name": "Medicine B",
+      "dosage": "10mg",
+      "frequency": "Once a day",
+      "duration": "7 days",
+      "instructions": "Take before bedtime"
+    }
+  ],
+  "doctorNotes": "Patient should take adequate rest and stay hydrated.",
+  "diagnosis": {
+    "condition": "Example condition",
+    "severity": "Mild"
+  },
+  "followUp": {
+    "required": true,
+    "date": "2026-08-21"
+  }
+}
