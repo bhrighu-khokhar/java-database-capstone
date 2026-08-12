@@ -1,109 +1,276 @@
-<!-- adminDashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- 
-Step-by-Step Explanation of `adminDashboard.html`
-This file creates the Admin Dashboard interface for managing doctor-related data 
-with search, filter, and modal functionality.
+    <title>Admin Dashboard - Smart Clinic</title>
+
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/adminDashboard.css">
+</head>
+
+<body>
+
+<header class="dashboard-header">
+    <div class="header-left">
+        <h1>Smart Clinic</h1>
+        <span>Admin Dashboard</span>
+    </div>
+
+    <div class="header-right">
+        <span id="adminName">Admin</span>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+</header>
 
 
-1. Declare the Document Type
+<main class="dashboard-container">
 
-   * Use `<!DOCTYPE html>` to ensure HTML5 standards for consistent rendering across browsers.
+    <section class="dashboard-title">
+        <div>
+            <h2>Doctor Management</h2>
+            <p>View, search and manage clinic doctors.</p>
+        </div>
 
-2. Begin the HTML Document with Thymeleaf Namespace
+        <button id="openAddDoctorBtn" class="primary-btn">
+            + Add Doctor
+        </button>
+    </section>
 
-   * Add the `<html>` tag with `xmlns:th="http://www.thymeleaf.org"` to allow Thymeleaf-specific attributes in Spring-based apps.
 
-3. Head Section – Metadata and Resources
+    <!-- Filters -->
+    <section class="filters">
 
-   * Open the `<head>` section for meta info and links to assets and scripts.
+        <div class="filter-group">
+            <label for="searchDoctor">Search Doctor</label>
+            <input
+                type="text"
+                id="searchDoctor"
+                placeholder="Search by doctor name..."
+            >
+        </div>
 
-4. Set Character Encoding
+        <div class="filter-group">
+            <label for="specialtyFilter">Specialty</label>
 
-   * Use UTF-8 to support all characters and prevent encoding issues.
+            <select id="specialtyFilter">
+                <option value="">All Specialties</option>
+            </select>
+        </div>
 
-5. Set the Favicon
+        <div class="filter-group">
+            <label for="timeFilter">Available Time</label>
 
-   * Add a favicon for browser tabs using Thymeleaf pathing: 
-     `<link rel="icon" type="image/png" th:href="@{/assets/images/logo/logo.png}" />`.
+            <select id="timeFilter">
+                <option value="">All Times</option>
+            </select>
+        </div>
 
-6. Set the Page Title
+        <button id="clearFiltersBtn" class="secondary-btn">
+            Clear Filters
+        </button>
 
-   * Give the page a title, e.g., `"Admin Dashboard"`, which will show in the browser tab.
+    </section>
 
-7. Link CSS Stylesheets
 
-   * Include dashboard-specific styles and global site-wide styles:
-     - `adminDashboard.css` for layout and design of this page.
-     - `style.css` for shared UI components.
+    <!-- Doctor count -->
+    <section class="doctor-summary">
+        <h3>Doctors</h3>
+        <span id="doctorCount">0 doctors</span>
+    </section>
 
-8. Link JavaScript Files (with `defer`)
 
-   * Use Thymeleaf's `th:src` to include JS components and utilities:
-     - `render.js` (rendering content)
-     - `util.js` (utility functions)
-     - `header.js` and `footer.js` (for dynamic header/footer)
-   * Use `defer` so scripts execute after the HTML is fully parsed.
+    <!-- Loading -->
+    <div id="loadingMessage" class="message">
+        Loading doctors...
+    </div>
 
-9. Close the Head and Begin the Body
 
-    * Start the visible part of the webpage. `onload="renderContent()"` is used to call a function when the page is ready.
+    <!-- Error -->
+    <div id="errorMessage" class="error-message hidden"></div>
 
-10. Create the Container
 
-    * Add a `div` with class `container` for layout control.
+    <!-- Doctor cards -->
+    <section id="doctorList" class="doctor-grid">
+    </section>
 
-11. Add a Wrapper Inside the Container
+</main>
 
-    * Wrap page elements with a `wrapper` div to maintain consistent spacing and organization.
 
-12. Insert a Header Placeholder
+<!-- Add Doctor Modal -->
 
-    * Add `<div id="header"></div>` for injecting the header via JavaScript.
+<div id="doctorModal" class="modal hidden">
 
-13. Define the Main Section
+    <div class="modal-content">
 
-    * Use `<main class="main-content">` for the central dashboard area.
+        <div class="modal-header">
+            <h2>Add New Doctor</h2>
 
-14. Add a Search Bar
+            <button
+                type="button"
+                id="closeDoctorModal"
+                class="close-btn">
+                &times;
+            </button>
+        </div>
 
-    * Add an input field with `id="searchBar"` for admin to search content dynamically.
 
-15. Add Filter Dropdowns
+        <form id="doctorForm">
 
-    * Use two `<select>` elements:
-      - One for time (AM/PM).
-      - One for filtering by medical specialty (Cardiologist, Dentist, etc.).
+            <div class="form-group">
+                <label for="doctorName">Name</label>
 
-16. Add Content Display Area
+                <input
+                    type="text"
+                    id="doctorName"
+                    name="name"
+                    required
+                    minlength="3"
+                    maxlength="100"
+                    placeholder="Dr. John Smith">
+            </div>
 
-    * Insert a `<div id="content"></div>` for dynamic injection of doctor cards or data.
 
-17. Add a Footer Placeholder
+            <div class="form-group">
+                <label for="doctorSpecialty">Specialty</label>
 
-    * Use `<div id="footer"></div>` for a JavaScript-rendered footer.
+                <input
+                    type="text"
+                    id="doctorSpecialty"
+                    name="specialty"
+                    required
+                    minlength="3"
+                    maxlength="50"
+                    placeholder="Cardiology">
+            </div>
 
-18. Add Modal Structure
 
-    * Include a modal with:
-      - A close button (`&times;`)
-      - A content area (`#modal-body`) for displaying popup information or forms.
+            <div class="form-group">
+                <label for="doctorEmail">Email</label>
 
-19. Include Page-Specific JavaScript Modules
+                <input
+                    type="email"
+                    id="doctorEmail"
+                    name="email"
+                    required
+                    placeholder="doctor@example.com">
+            </div>
 
-    * Load JavaScript specific to the admin dashboard:
-      - `adminDashboard.js` for dashboard logic.
-      - `doctorCard.js` for rendering doctor information cards.
-    * Use `type="module"` and `defer` for modern and non-blocking loading.
 
-    HINT:
-        `<script type="module" src="../../static/js/adminDashboard.js" defer></script>`
-        `<script type="module" src="../../static/js/doctorDashboard.js" defer></script>`
-        
-        
-20. Close the Body and HTML Tags
+            <div class="form-group">
+                <label for="doctorPassword">Password</label>
 
-    * Finish the structure by properly closing all tags.
+                <input
+                    type="password"
+                    id="doctorPassword"
+                    name="password"
+                    required
+                    minlength="6"
+                    placeholder="Password">
+            </div>
 
- -->
 
+            <div class="form-group">
+                <label for="doctorPhone">Phone</label>
+
+                <input
+                    type="tel"
+                    id="doctorPhone"
+                    name="phone"
+                    required
+                    pattern="[0-9]{10}"
+                    placeholder="9876543210">
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Available Times</label>
+
+                <div class="time-checkboxes">
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="availableTimes"
+                            value="09:00">
+                        09:00 AM
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="availableTimes"
+                            value="10:00">
+                        10:00 AM
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="availableTimes"
+                            value="11:00">
+                        11:00 AM
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="availableTimes"
+                            value="14:00">
+                        02:00 PM
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="availableTimes"
+                            value="15:00">
+                        03:00 PM
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="availableTimes"
+                            value="16:00">
+                        04:00 PM
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div id="formError" class="error-message hidden"></div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    id="cancelDoctorBtn"
+                    class="secondary-btn">
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-btn">
+                    Add Doctor
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="/js/adminDashboard.js"></script>
+
+</body>
+</html>
