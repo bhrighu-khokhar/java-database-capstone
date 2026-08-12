@@ -1,72 +1,574 @@
+const API_URL = "/api/doctors";
+
+let allDoctors = [];
+let filteredDoctors = [];
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    checkAdminLogin();
+
+    loadDoctors();
+
+    setupEventListeners();
+
+});
+
+
 /*
-  This script handles the admin dashboard functionality for managing doctors:
-  - Loads all doctor cards
-  - Filters doctors by name, time, or specialty
-  - Adds a new doctor via modal form
+ * Check whether the admin is logged in.
+ */
+function checkAdminLogin() {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "/";
+        return;
+    }
+
+    const adminName = localStorage.getItem("username");
+
+    if (adminName) {
+        document.getElementById("adminName").textContent = adminName;
+    }
+}
 
 
-  Attach a click listener to the "Add Doctor" button
-  When clicked, it opens a modal form using openModal('addDoctor')
+/*
+ * Get all doctors from backend.
+ */
+async function loadDoctors() {
+
+    const loadingMessage = document.getElementById("loadingMessage");
+    const errorMessage = document.getElementById("errorMessage");
+
+    loadingMessage.classList.remove("hidden");
+    errorMessage.classList.add("hidden");
+
+    try {
+
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(API_URL, {
+            method: "GET",
+
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to load doctors.");
+        }
+
+        allDoctors = await response.json();
+
+        filteredDoctors = [...allDoctors];
+
+        populateFilters();
+
+        displayDoctors(filteredDoctors);
+
+    } catch (error) {
+
+        console.error(error);
+
+        errorMessage.textContent =
+            "Unable to load doctors. Please try again.";
+
+        errorMessage.classList.remove("hidden");
+
+    } finally {
+
+        loadingMessage.classList.add("hidden");
+    }
+}
 
 
-  When the DOM is fully loaded:
-    - Call loadDoctorCards() to fetch and display all doctors
+/*
+ * Display doctor cards.
+ */
+function displayDoctors(doctors) {
+
+    const doctorList = document.getElementById("doctorList");
+    const doctorCount = document.getElementById("doctorCount");
+
+    doctorList.innerHTML = "";
+
+    doctorCount.textContent =
+        `${doctors.length} doctor${doctors.length !== 1 ? "s" : ""}`;
 
 
-  Function: loadDoctorCards
-  Purpose: Fetch all doctors and display them as cards
+    if (doctors.length === 0) {
 
-    Call getDoctors() from the service layer
-    Clear the current content area
-    For each doctor returned:
-    - Create a doctor card using createDoctorCard()
-    - Append it to the content div
+        doctorList.innerHTML = `
+            <div class="empty-message">
+                <h3>No doctors found</h3>
+                <p>Try changing your search or filters.</p>
+            </div>
+        `;
 
-    Handle any fetch errors by logging them
-
-
-  Attach 'input' and 'change' event listeners to the search bar and filter dropdowns
-  On any input change, call filterDoctorsOnChange()
+        return;
+    }
 
 
-  Function: filterDoctorsOnChange
-  Purpose: Filter doctors based on name, available time, and specialty
+    doctors.forEach(doctor => {
 
-    Read values from the search bar and filters
-    Normalize empty values to null
-    Call filterDoctors(name, time, specialty) from the service
+        const card = createDoctorCard(doctor);
 
-    If doctors are found:
-    - Render them using createDoctorCard()
-    If no doctors match the filter:
-    - Show a message: "No doctors found with the given filters."
+        doctorList.appendChild(card);
 
-    Catch and display any errors with an alert
+    });
+}
 
 
-  Function: renderDoctorCards
-  Purpose: A helper function to render a list of doctors passed to it
+/*
+ * Create a doctor card.
+ */
+function createDoctorCard(doctor) {
 
-    Clear the content area
-    Loop through the doctors and append each card to the content area
+    const card = document.createElement("div");
+
+    card.className = "doctor-card";
 
 
-  Function: adminAddDoctor
-  Purpose: Collect form data and add a new doctor to the system
+    const availableTimes =
+        Array.isArray(doctor.availableTimes)
+            ? doctor.availableTimes
+            : [];
 
-    Collect input values from the modal form
-    - Includes name, email, phone, password, specialty, and available times
 
-    Retrieve the authentication token from localStorage
-    - If no token is found, show an alert and stop execution
+    card.innerHTML = `
+        <div class="doctor-card-header">
 
-    Build a doctor object with the form values
+            <div class="doctor-avatar">
+                ${getInitials(doctor.name)}
+            </div>
 
-    Call saveDoctor(doctor, token) from the service
+            <div>
+                <h3>${escapeHtml(doctor.name || "Unknown Doctor")}</h3>
 
-    If save is successful:
-    - Show a success message
-    - Close the modal and reload the page
+                <p class="specialty">
+                    ${escapeHtml(doctor.specialty || "No specialty")}
+                </p>
+            </div>
 
-    If saving fails, show an error message
-*/
+        </div>
+
+
+        <div class="doctor-details">
+
+            <p>
+                <strong>Email:</strong>
+                ${escapeHtml(doctor.email || "Not available")}
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                ${escapeHtml(doctor.phone || "Not available")}
+            </p>
+
+            <p>
+                <strong>Available:</strong>
+            </p>
+
+            <div class="time-list">
+
+                ${
+                    availableTimes.length > 0
+                        ? availableTimes
+                            .map(time =>
+                                `<span class="time-badge">
+                                    ${escapeHtml(time)}
+                                </span>`
+                            )
+                            .join("")
+                        : `<span class="no-time">
+                            No times available
+                           </span>`
+                }
+
+            </div>
+
+        </div>
+    `;
+
+    return card;
+}
+
+
+/*
+ * Populate specialty and time filters.
+ */
+function populateFilters() {
+
+    const specialtyFilter =
+        document.getElementById("specialtyFilter");
+
+    const timeFilter =
+        document.getElementById("timeFilter");
+
+
+    const specialties = new Set();
+
+    const times = new Set();
+
+
+    allDoctors.forEach(doctor => {
+
+        if (doctor.specialty) {
+            specialties.add(doctor.specialty);
+        }
+
+
+        if (Array.isArray(doctor.availableTimes)) {
+
+            doctor.availableTimes.forEach(time => {
+                times.add(time);
+            });
+
+        }
+
+    });
+
+
+    specialtyFilter.innerHTML =
+        `<option value="">All Specialties</option>`;
+
+
+    [...specialties]
+        .sort()
+        .forEach(specialty => {
+
+            const option = document.createElement("option");
+
+            option.value = specialty;
+            option.textContent = specialty;
+
+            specialtyFilter.appendChild(option);
+
+        });
+
+
+    timeFilter.innerHTML =
+        `<option value="">All Times</option>`;
+
+
+    [...times]
+        .sort()
+        .forEach(time => {
+
+            const option = document.createElement("option");
+
+            option.value = time;
+            option.textContent = time;
+
+            timeFilter.appendChild(option);
+
+        });
+}
+
+
+/*
+ * Search and filter doctors.
+ */
+function applyFilters() {
+
+    const searchValue =
+        document
+            .getElementById("searchDoctor")
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    const specialtyValue =
+        document.getElementById("specialtyFilter").value;
+
+
+    const timeValue =
+        document.getElementById("timeFilter").value;
+
+
+    filteredDoctors = allDoctors.filter(doctor => {
+
+        const name =
+            (doctor.name || "").toLowerCase();
+
+
+        const matchesName =
+            name.includes(searchValue);
+
+
+        const matchesSpecialty =
+            !specialtyValue ||
+            doctor.specialty === specialtyValue;
+
+
+        const availableTimes =
+            Array.isArray(doctor.availableTimes)
+                ? doctor.availableTimes
+                : [];
+
+
+        const matchesTime =
+            !timeValue ||
+            availableTimes.includes(timeValue);
+
+
+        return (
+            matchesName &&
+            matchesSpecialty &&
+            matchesTime
+        );
+
+    });
+
+
+    displayDoctors(filteredDoctors);
+}
+
+
+/*
+ * Add doctor.
+ */
+async function addDoctor(event) {
+
+    event.preventDefault();
+
+
+    const formError =
+        document.getElementById("formError");
+
+
+    formError.classList.add("hidden");
+
+
+    const name =
+        document.getElementById("doctorName").value.trim();
+
+
+    const specialty =
+        document.getElementById("doctorSpecialty").value.trim();
+
+
+    const email =
+        document.getElementById("doctorEmail").value.trim();
+
+
+    const password =
+        document.getElementById("doctorPassword").value;
+
+
+    const phone =
+        document.getElementById("doctorPhone").value.trim();
+
+
+    const availableTimes =
+        [...document.querySelectorAll(
+            'input[name="availableTimes"]:checked'
+        )].map(input => input.value);
+
+
+    const doctor = {
+        name: name,
+        specialty: specialty,
+        email: email,
+        password: password,
+        phone: phone,
+        availableTimes: availableTimes
+    };
+
+
+    try {
+
+        const token =
+            localStorage.getItem("token");
+
+
+        const response = await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+
+            body: JSON.stringify(doctor)
+
+        });
+
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            throw new Error(
+                errorText || "Unable to add doctor."
+            );
+        }
+
+
+        closeDoctorModal();
+
+        document
+            .getElementById("doctorForm")
+            .reset();
+
+
+        await loadDoctors();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        formError.textContent =
+            "Unable to add doctor. Please check the entered information.";
+
+        formError.classList.remove("hidden");
+    }
+}
+
+
+/*
+ * Open modal.
+ */
+function openDoctorModal() {
+
+    document
+        .getElementById("doctorModal")
+        .classList.remove("hidden");
+}
+
+
+/*
+ * Close modal.
+ */
+function closeDoctorModal() {
+
+    document
+        .getElementById("doctorModal")
+        .classList.add("hidden");
+
+}
+
+
+/*
+ * Event listeners.
+ */
+function setupEventListeners() {
+
+    document
+        .getElementById("searchDoctor")
+        .addEventListener("input", applyFilters);
+
+
+    document
+        .getElementById("specialtyFilter")
+        .addEventListener("change", applyFilters);
+
+
+    document
+        .getElementById("timeFilter")
+        .addEventListener("change", applyFilters);
+
+
+    document
+        .getElementById("clearFiltersBtn")
+        .addEventListener("click", () => {
+
+            document.getElementById("searchDoctor").value = "";
+
+            document.getElementById("specialtyFilter").value = "";
+
+            document.getElementById("timeFilter").value = "";
+
+            applyFilters();
+
+        });
+
+
+    document
+        .getElementById("openAddDoctorBtn")
+        .addEventListener("click", openDoctorModal);
+
+
+    document
+        .getElementById("closeDoctorModal")
+        .addEventListener("click", closeDoctorModal);
+
+
+    document
+        .getElementById("cancelDoctorBtn")
+        .addEventListener("click", closeDoctorModal);
+
+
+    document
+        .getElementById("doctorForm")
+        .addEventListener("submit", addDoctor);
+
+
+    document
+        .getElementById("logoutBtn")
+        .addEventListener("click", logout);
+
+
+    document
+        .getElementById("doctorModal")
+        .addEventListener("click", event => {
+
+            if (event.target.id === "doctorModal") {
+                closeDoctorModal();
+            }
+
+        });
+}
+
+
+/*
+ * Logout.
+ */
+function logout() {
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+
+    window.location.href = "/";
+}
+
+
+/*
+ * Get initials for avatar.
+ */
+function getInitials(name) {
+
+    if (!name) {
+        return "DR";
+    }
+
+    return name
+        .split(" ")
+        .filter(part => part.length > 0)
+        .slice(0, 2)
+        .map(part => part[0].toUpperCase())
+        .join("");
+}
+
+
+/*
+ * Prevent HTML injection when displaying API data.
+ */
+function escapeHtml(value) {
+
+    const div = document.createElement("div");
+
+    div.textContent = value;
+
+    return div.innerHTML;
+}
