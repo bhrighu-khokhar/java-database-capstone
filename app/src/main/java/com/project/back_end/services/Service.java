@@ -8,10 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.project.back_end.model.Admin;
-import com.project.back_end.model.Appointment;
-import com.project.back_end.model.Doctor;
-import com.project.back_end.model.Patient;
+import com.project.back_end.models.Admin;
+import com.project.back_end.models.Appointment;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.models.Patient;
 import com.project.back_end.repo.AdminRepository;
 import com.project.back_end.repo.AppointmentRepository;
 import com.project.back_end.repo.DoctorRepository;
