@@ -5,7 +5,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.project.back_end.model.Prescription;
+import com.project.back_end.models.Prescription;
 import com.project.back_end.services.AppointmentService;
 import com.project.back_end.services.PrescriptionService;
 import com.project.back_end.services.Service;
