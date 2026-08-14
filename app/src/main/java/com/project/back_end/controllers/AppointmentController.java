@@ -1,7 +1,6 @@
 package com.project.back_end.controllers;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -68,13 +67,11 @@ public class AppointmentController {
             return tokenResponse;
         }
 
-        int result = appointmentService.bookAppointment(
-                appointment,
-                token
-        );
+        int result = appointmentService.bookAppointment(appointment);
 
         if (result == 1) {
-            return ResponseEntity.ok("Appointment booked successfully");
+            return ResponseEntity.ok(
+                    "Appointment booked successfully");
         }
 
         if (result == -1) {
@@ -87,8 +84,9 @@ public class AppointmentController {
     }
 
     // Update appointment
-    @PutMapping("/{token}")
+    @PutMapping("/{id}/{token}")
     public ResponseEntity<?> updateAppointment(
+            @PathVariable Long id,
             @Valid @RequestBody Appointment appointment,
             @PathVariable String token) {
 
@@ -99,9 +97,16 @@ public class AppointmentController {
             return tokenResponse;
         }
 
+        Long appointmentId = appointment.getId();
+
+        if (appointmentId == null) {
+            appointmentId = id;
+        }
+
         return appointmentService.updateAppointment(
+                appointmentId,
                 appointment,
-                token
+                appointment.getPatient().getId()
         );
     }
 
@@ -118,9 +123,6 @@ public class AppointmentController {
             return tokenResponse;
         }
 
-        return appointmentService.cancelAppointment(
-                id,
-                token
-        );
+        return appointmentService.cancelAppointment(id);
     }
 }
