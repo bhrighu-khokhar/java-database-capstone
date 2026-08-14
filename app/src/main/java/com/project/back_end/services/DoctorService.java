@@ -93,8 +93,8 @@ public class DoctorService {
             existingDoctor.setAvailableTimes(
                     updatedDoctor.getAvailableTimes());
 
-            if (updatedDoctor.getPassword() != null &&
-                !updatedDoctor.getPassword().isEmpty()) {
+            if (updatedDoctor.getPassword() != null
+                    && !updatedDoctor.getPassword().isEmpty()) {
 
                 existingDoctor.setPassword(updatedDoctor.getPassword());
             }
@@ -147,9 +147,8 @@ public class DoctorService {
                 return "Invalid email or password";
             }
 
-            return tokenService.generateToken(
-                    doctor.getEmail(),
-                    "DOCTOR");
+            // TokenService currently accepts only one argument
+            return tokenService.generateToken(doctor.getEmail());
 
         } catch (Exception e) {
             return "Invalid email or password";
@@ -213,8 +212,10 @@ public class DoctorService {
                 .filter(doctor ->
                         doctor.getAvailableTimes()
                                 .stream()
-                                .anyMatch(slot -> matchesTimePeriod(
-                                        slot, requestedTime)))
+                                .anyMatch(slot ->
+                                        matchesTimePeriod(
+                                                slot,
+                                                requestedTime)))
                 .collect(Collectors.toList());
     }
 
