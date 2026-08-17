@@ -101,12 +101,23 @@ public class DoctorController {
     public ResponseEntity<?> doctorLogin(
             @Valid @RequestBody Login login) {
 
-        return doctorService.validateDoctor(login);
+        String token = doctorService.validateDoctor(
+                login.getEmail(),
+                login.getPassword()
+        );
+
+        if ("Invalid email or password".equals(token)) {
+            return ResponseEntity.status(401)
+                    .body(token);
+        }
+
+        return ResponseEntity.ok(token);
     }
 
     // Update doctor
-    @PutMapping("/{token}")
+    @PutMapping("/{id}/{token}")
     public ResponseEntity<?> updateDoctor(
+            @PathVariable Long id,
             @Valid @RequestBody Doctor doctor,
             @PathVariable String token) {
 
@@ -117,7 +128,7 @@ public class DoctorController {
             return tokenResponse;
         }
 
-        int result = doctorService.updateDoctor(doctor);
+        int result = doctorService.updateDoctor(id, doctor);
 
         if (result == 1) {
             return ResponseEntity.ok(

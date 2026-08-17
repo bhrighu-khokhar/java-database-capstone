@@ -1,7 +1,6 @@
 package com.project.back_end.controllers;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,14 +28,13 @@ public class AppointmentController {
     public AppointmentController(
             AppointmentService appointmentService,
             Service service) {
-
         this.appointmentService = appointmentService;
         this.service = service;
     }
 
-    // Get appointments for doctor
-    @GetMapping("/{date}/{patientName}/{token}")
+    @GetMapping("/{doctorId}/{date}/{patientName}/{token}")
     public ResponseEntity<?> getAppointments(
+            @PathVariable Long doctorId,
             @PathVariable LocalDate date,
             @PathVariable String patientName,
             @PathVariable String token) {
@@ -48,14 +46,13 @@ public class AppointmentController {
             return tokenResponse;
         }
 
-        return appointmentService.getAppointments(
-                date,
-                patientName,
-                token
-        );
+        return ResponseEntity.ok(
+                appointmentService.getAppointments(
+                        doctorId,
+                        date,
+                        patientName));
     }
 
-    // Book appointment
     @PostMapping("/{token}")
     public ResponseEntity<?> bookAppointment(
             @Valid @RequestBody Appointment appointment,
@@ -68,27 +65,21 @@ public class AppointmentController {
             return tokenResponse;
         }
 
-        int result = appointmentService.bookAppointment(
-                appointment,
-                token
-        );
+        int result =
+                appointmentService.bookAppointment(appointment);
 
         if (result == 1) {
-            return ResponseEntity.ok("Appointment booked successfully");
-        }
-
-        if (result == -1) {
-            return ResponseEntity.badRequest()
-                    .body("Invalid doctor or appointment time");
+            return ResponseEntity.ok(
+                    "Appointment booked successfully");
         }
 
         return ResponseEntity.badRequest()
                 .body("Appointment could not be booked");
     }
 
-    // Update appointment
-    @PutMapping("/{token}")
+    @PutMapping("/{id}/{token}")
     public ResponseEntity<?> updateAppointment(
+            @PathVariable Long id,
             @Valid @RequestBody Appointment appointment,
             @PathVariable String token) {
 
@@ -99,16 +90,24 @@ public class AppointmentController {
             return tokenResponse;
         }
 
-        return appointmentService.updateAppointment(
-                appointment,
-                token
-        );
+        if (appointment.getPatient() == null ||
+            appointment.getPatient().getId() == null) {
+
+            return ResponseEntity.badRequest()
+                    .body("Patient is required");
+        }
+
+        return ResponseEntity.ok(
+                appointmentService.updateAppointment(
+                        id,
+                        appointment,
+                        appointment.getPatient().getId()));
     }
 
-    // Cancel appointment
-    @DeleteMapping("/{id}/{token}")
+    @DeleteMapping("/{id}/{patientId}/{token}")
     public ResponseEntity<?> cancelAppointment(
             @PathVariable Long id,
+            @PathVariable Long patientId,
             @PathVariable String token) {
 
         ResponseEntity<?> tokenResponse =
@@ -118,9 +117,9 @@ public class AppointmentController {
             return tokenResponse;
         }
 
-        return appointmentService.cancelAppointment(
-                id,
-                token
-        );
+        return ResponseEntity.ok(
+                appointmentService.cancelAppointment(
+                        id,
+                        patientId));
     }
 }

@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import com.project.back_end.models.Admin;
 import com.project.back_end.models.Appointment;
@@ -17,7 +16,7 @@ import com.project.back_end.repo.AppointmentRepository;
 import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.repo.PatientRepository;
 
-@Service
+@org.springframework.stereotype.Service
 public class Service {
 
     private final TokenService tokenService;
@@ -111,8 +110,7 @@ public class Service {
                     && (time == null || time.isBlank())) {
 
                 return ResponseEntity.ok(
-                        doctorService.getDoctors()
-                );
+                        doctorService.getDoctors());
             }
 
             if (name != null && !name.isBlank()
@@ -121,8 +119,7 @@ public class Service {
 
                 return ResponseEntity.ok(
                         doctorService.filterDoctorsByNameSpecilityandTime(
-                                name, specialty, time)
-                );
+                                name, specialty, time));
             }
 
             if (name != null && !name.isBlank()
@@ -130,8 +127,7 @@ public class Service {
 
                 return ResponseEntity.ok(
                         doctorService.filterDoctorByNameAndSpecility(
-                                name, specialty)
-                );
+                                name, specialty));
             }
 
             if (name != null && !name.isBlank()
@@ -139,8 +135,7 @@ public class Service {
 
                 return ResponseEntity.ok(
                         doctorService.filterDoctorByNameAndTime(
-                                name, time)
-                );
+                                name, time));
             }
 
             if (specialty != null && !specialty.isBlank()
@@ -148,34 +143,29 @@ public class Service {
 
                 return ResponseEntity.ok(
                         doctorService.filterDoctorByTimeAndSpecility(
-                                specialty, time)
-                );
+                                time, specialty));
             }
 
             if (name != null && !name.isBlank()) {
 
                 return ResponseEntity.ok(
-                        doctorService.findDoctorByName(name)
-                );
+                        doctorService.findDoctorByName(name));
             }
 
             if (specialty != null && !specialty.isBlank()) {
 
                 return ResponseEntity.ok(
-                        doctorService.filterDoctorBySpecility(specialty)
-                );
+                        doctorService.filterDoctorBySpecility(specialty));
             }
 
             if (time != null && !time.isBlank()) {
 
                 return ResponseEntity.ok(
-                        doctorService.filterDoctorsByTime(time)
-                );
+                        doctorService.filterDoctorsByTime(time));
             }
 
             return ResponseEntity.ok(
-                    doctorService.getDoctors()
-            );
+                    doctorService.getDoctors());
 
         } catch (Exception e) {
 
@@ -203,10 +193,9 @@ public class Service {
             return doctorService.getDoctorAvailability(
                     doctorId,
                     date
-            ).contains(appointmentTime.toLocalTime()) ? 1 : 0;
+            ).contains(appointmentTime.toLocalTime().toString()) ? 1 : 0;
 
         } catch (Exception e) {
-
             return 0;
         }
     }
@@ -224,7 +213,6 @@ public class Service {
             return patient == null;
 
         } catch (Exception e) {
-
             return false;
         }
     }
@@ -296,8 +284,7 @@ public class Service {
                         patientService.filterByDoctorAndCondition(
                                 patientId,
                                 doctorName,
-                                condition)
-                );
+                                condition));
             }
 
             if (condition != null && !condition.isBlank()) {
@@ -305,8 +292,7 @@ public class Service {
                 return ResponseEntity.ok(
                         patientService.filterByCondition(
                                 patientId,
-                                condition)
-                );
+                                condition));
             }
 
             if (doctorName != null && !doctorName.isBlank()) {
@@ -314,13 +300,11 @@ public class Service {
                 return ResponseEntity.ok(
                         patientService.filterByDoctor(
                                 patientId,
-                                doctorName)
-                );
+                                doctorName));
             }
 
             return ResponseEntity.ok(
-                    patientService.getPatientAppointment(patientId)
-            );
+                    patientService.getPatientAppointment(patientId));
 
         } catch (Exception e) {
 

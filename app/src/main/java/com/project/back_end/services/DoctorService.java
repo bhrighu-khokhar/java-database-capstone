@@ -147,9 +147,7 @@ public class DoctorService {
                 return "Invalid email or password";
             }
 
-            return tokenService.generateToken(
-                    doctor.getEmail(),
-                    "DOCTOR");
+        return tokenService.generateToken(doctor.getEmail());
 
         } catch (Exception e) {
             return "Invalid email or password";
