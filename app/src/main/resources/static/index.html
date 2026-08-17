@@ -215,27 +215,82 @@
 
 
 <script>
+let selectedRole="";
 
-    function openLogin(role) {
-        document.getElementById("loginTitle").innerText =
-            role + " Login";
+function openLogin(role){
+selectedRole=role;
+document.getElementById("loginTitle").innerText=role+" Login";
+document.getElementById("loginModal").style.display="flex";
+document.getElementById("username").value="";
+document.getElementById("password").value="";
+}
 
-        document.getElementById("loginModal").style.display = "flex";
-    }
+function closeLogin(){
+document.getElementById("loginModal").style.display="none";
+}
 
-    function closeLogin() {
-        document.getElementById("loginModal").style.display = "none";
-    }
+window.onclick=function(event){
+const modal=document.getElementById("loginModal");
+if(event.target===modal) closeLogin();
+};
 
-    window.onclick = function(event) {
+document.querySelector("#loginModal form").addEventListener("submit",async function(event){
+event.preventDefault();
 
-        const modal = document.getElementById("loginModal");
+const username=document.getElementById("username").value.trim();
+const password=document.getElementById("password").value;
 
-        if (event.target === modal) {
-            closeLogin();
-        }
-    };
+if(!username||!password){
+alert("Please enter username/email and password");
+return;
+}
 
+let url;
+let body;
+
+if(selectedRole==="Admin"){
+url="/admin/login";
+body={username:username,password:password};
+}else if(selectedRole==="Patient"){
+url="/patient/login";
+body={email:username,password:password};
+}else if(selectedRole==="Doctor"){
+url="/doctor/login";
+body={email:username,password:password};
+}
+
+try{
+const response=await fetch(url,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(body)
+});
+
+const data=await response.text();
+
+if(!response.ok){
+alert("Login failed: "+data);
+return;
+}
+
+localStorage.setItem("token",data);
+localStorage.setItem("role",selectedRole);
+
+alert("Login successful!");
+closeLogin();
+
+if(selectedRole==="Admin"){
+window.location.href="/admin.html";
+}else if(selectedRole==="Patient"){
+window.location.href="/pages/patientDashboard.html";
+}else if(selectedRole==="Doctor"){
+window.location.href="/doctor.html";
+}
+}catch(error){
+console.error("Login error:",error);
+alert("Unable to connect to server.");
+}
+});
 </script>
 
 </body>
