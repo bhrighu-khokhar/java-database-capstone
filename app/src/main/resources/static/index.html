@@ -1,104 +1,242 @@
-<!-- index.html -->
-<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-Step-by-Step Explanation of `index.html`.
-This file allows users to select a role (Admin, Patient, Doctor) 
-and triggers modal-based login functionality.
+    <title>Select Role</title>
 
-1. Label the File
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-   * Add a comment at the very top to identify the file as `index.html`. This helps developers stay organized.
+        body {
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
 
-2. Declare Document Type
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            text-align: center;
+        }
 
-   * Use the declaration for HTML5 so browsers know how to render the page correctly.
+        h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
 
-3. Start the HTML Document
+        .subtitle {
+            font-size: 18px;
+            color: #cbd5e1;
+            margin-bottom: 45px;
+        }
 
-   * Begin the HTML structure and set the document language to English to improve accessibility and SEO `lang="en"`.
+        .roles {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
 
-4. Head Section (Metadata and Resources)
+        .role-card {
+            width: 250px;
+            padding: 35px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 18px;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: 0.3s;
+        }
 
-   * Open the `<head>` section which contains settings and links that don’t show up visually.
+        .role-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.18);
+        }
 
-5. Set Character Encoding
+        .icon {
+            font-size: 55px;
+            margin-bottom: 20px;
+        }
 
-   * Specify UTF-8 encoding to support most global characters and symbols.
+        .role-card h2 {
+            margin-bottom: 10px;
+        }
 
-6. Set the Page Title
+        .role-card p {
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
 
-   * Give the page a name (e.g., "Select Role") that appears on the browser tab.
+        button {
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            background: #3b82f6;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
 
-7. Add a Favicon
+        button:hover {
+            background: #2563eb;
+        }
 
-   * Link to an icon (like a logo) that will appear in the browser tab from the address `href="../assets/images/logo/Logo.png"`
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
 
-8. Link Stylesheets
+        .modal-content {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            color: #111827;
+            padding: 30px;
+            border-radius: 15px;
+            position: relative;
+        }
 
-   * Add a page-specific stylesheet for layout and design.
-   * Also include a global stylesheet for shared site-wide styles.
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
 
-   HINT:
-      `<link rel="stylesheet" href="../assets/css/index.css">`
-      `<link rel="stylesheet" href="../assets/css/style.css">`
+        .close {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 28px;
+            cursor: pointer;
+        }
 
-9. Add JavaScript Files with `defer`
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 15px;
+        }
 
-   * Link utility and rendering JavaScript files (e.g., `util.js`, `render.js`).
-   * Include scripts for rendering components like header and footer.
-   * Use the `defer` attribute so they load after the HTML is parsed.
+        .login-btn {
+            width: 100%;
+        }
+    </style>
+</head>
 
-   HINT:
-      `<script src="../js/util.js" defer></script>`
-      `<script src="../js/render.js" defer></script>`
-      `<script src="../js/components/header.js" defer></script>`
-      `<script src="../js/components/footer.js" defer></script>`
-      
-10. Close the Head and Open the Body
+<body>
 
-    * Wrap up metadata and begin the visible page content.
+<div class="container">
 
-11. Create a Container
+    <h1>Welcome</h1>
 
-    * Add a main container to hold all page elements and apply layout constraints.
+    <p class="subtitle">
+        Please select your role to continue
+    </p>
 
-12. Use a Wrapper for Structure
+    <div class="roles">
 
-    * Inside the container, add a wrapper to group header, main, and footer sections logically.
+        <div class="role-card" onclick="openLogin('Admin')">
+            <div class="icon">👨‍💼</div>
+            <h2>Admin</h2>
+            <p>Manage the healthcare system</p>
+            <button>Login as Admin</button>
+        </div>
 
-13. Insert a Header Placeholder
+        <div class="role-card" onclick="openLogin('Patient')">
+            <div class="icon">🧑‍⚕️</div>
+            <h2>Patient</h2>
+            <p>Access your appointments and records</p>
+            <button>Login as Patient</button>
+        </div>
 
-    * Add a `div` that will be dynamically filled by JavaScript with the site’s header.
+        <div class="role-card" onclick="openLogin('Doctor')">
+            <div class="icon">👨‍⚕️</div>
+            <h2>Doctor</h2>
+            <p>Manage patients and appointments</p>
+            <button>Login as Doctor</button>
+        </div>
 
-14. Define the Main Section
+    </div>
 
-    * Use a semantic `<main>` tag to hold the central content of the page.
+</div>
 
-15. Add a Heading for Role Selection
 
-    * Display a heading like “Select Your Role” to instruct users.
+<!-- Login Modal -->
 
-16. Add Buttons for Roles
+<div id="loginModal" class="modal">
 
-    * Create buttons for each role: Admin, Patient, and Doctor.
-    * Assign unique identifiers or `onclick` handlers to them as needed.
+    <div class="modal-content">
 
-17. Insert a Footer Placeholder
+        <span class="close" onclick="closeLogin()">&times;</span>
 
-    * Add a `div` that will be dynamically filled by JavaScript with the site’s footer.
+        <h2 id="loginTitle">Login</h2>
 
-18. Create a Modal Structure
+        <form>
 
-    * Add a modal overlay for popups (like login forms).
-    * Include a close button and an inner container for dynamic content.
+            <input
+                type="text"
+                id="username"
+                placeholder="Username"
+                required
+            >
 
-19. Load Page-Specific Logic Module
+            <input
+                type="password"
+                id="password"
+                placeholder="Password"
+                required
+            >
 
-    * Use a `<script type="module">` tag to load the role selection logic (e.g., `index.js`).
-    * Ensure it’s deferred so it doesn’t block HTML rendering.
+            <button
+                type="submit"
+                class="login-btn">
+                Login
+            </button>
 
-20. Close the Body and HTML Tags
+        </form>
 
-    * Properly close all opened tags to complete the document structure.
+    </div>
 
- -->
+</div>
+
+
+<script>
+
+    function openLogin(role) {
+        document.getElementById("loginTitle").innerText =
+            role + " Login";
+
+        document.getElementById("loginModal").style.display = "flex";
+    }
+
+    function closeLogin() {
+        document.getElementById("loginModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+
+        const modal = document.getElementById("loginModal");
+
+        if (event.target === modal) {
+            closeLogin();
+        }
+    };
+
+</script>
+
+</body>
+</html>
