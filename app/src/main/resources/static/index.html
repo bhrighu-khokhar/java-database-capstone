@@ -266,25 +266,40 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify(body)
 });
 
-const data=await response.text();
+const data = await response.text();
 
-if(!response.ok){
-alert("Login failed: "+data);
-return;
+if (!response.ok) {
+    alert("Login failed: " + data);
+    return;
 }
 
-localStorage.setItem("token",data);
-localStorage.setItem("role",selectedRole);
+localStorage.setItem("role", selectedRole);
 
 alert("Login successful!");
 closeLogin();
 
-if(selectedRole==="Admin"){
-window.location.href="/admin.html";
-}else if(selectedRole==="Patient"){
-window.location.href="/pages/patientDashboard.html";
-}else if(selectedRole==="Doctor"){
-window.location.href="/doctor.html";
+if (selectedRole === "Admin") {
+
+    localStorage.setItem("token", data);
+
+    window.location.href =
+        "/adminDashboard/" + encodeURIComponent(data);
+
+} else if (selectedRole === "Doctor") {
+
+    localStorage.setItem("token", data);
+
+    window.location.href =
+        "/doctorDashboard/" + encodeURIComponent(data);
+
+} else if (selectedRole === "Patient") {
+
+    const result = JSON.parse(data);
+
+    localStorage.setItem("token", result.token);
+
+    window.location.href =
+        "/pages/loggedPatientDashboard.html";
 }
 }catch(error){
 console.error("Login error:",error);
